@@ -1,8 +1,8 @@
-# OpenClaw One-Click API Configurator (v1.2)
+# OpenClaw One-Click API Configurator (v1.3)
 # Windows PowerShell Version
 
 Write-Host "------------------------------------------" -ForegroundColor Cyan
-Write-Host "   OpenClaw API Setup Wizard (v1.2)" -ForegroundColor Cyan
+Write-Host "   OpenClaw API Setup Wizard (v1.3)" -ForegroundColor Cyan
 Write-Host "------------------------------------------" -ForegroundColor Cyan
 
 # 0. Dependency & Environment Checks
@@ -42,35 +42,34 @@ $MODEL_ID    = Read-Default "Enter Model ID" "gemini-3-flash-preview"
 # Using a here-string for the JSON structure
 $PROVIDER_PATCH = @"
 {
-  "$PROVIDER_ID": {
     "baseUrl": "$BASE_URL",
     "apiKey": "$API_KEY",
     "api": "openai-completions",
     "models": [
       { "id": "$MODEL_ID", "name": "$MODEL_ID", "reasoning": true, "input": [ "text", "image" ] }
     ]
-  }
 }
 "@
 
 # 3. Apply Config
-Write-Host "`nApplying configuration via Gateway RPC..." -ForegroundColor Yellow
+Write-Host "`nApplying configuration..." -ForegroundColor Yellow
 
-# In PowerShell, passing double quotes in strings to external commands can be tricky.
-# We escape them if necessary, but usually, PowerShell passes the string correctly 
-# to the process if it's quoted.
-openclaw config set models.providers "$PROVIDER_PATCH" --json
+# Use quotes for the key path to ensure variable interpolation happens correctly
+openclaw config set "models.providers.$PROVIDER_ID" $PROVIDER_PATCH --json
 
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "ERROR: Failed to apply provider configuration. Ensure the OpenClaw Gateway is running." -ForegroundColor Red
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "Configuration applied." -ForegroundColor Green
+} else {
+    Write-Host "ERROR: Failed to apply configuration. Ensure the OpenClaw Gateway is running." -ForegroundColor Red
     exit 1
 }
 
 openclaw config set agents.defaults.model.primary "$PROVIDER_ID/$MODEL_ID"
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "`nSUCCESS: Configuration applied. Gateway is reloading." -ForegroundColor Green
+    openclaw gateway restart
+    Write-Host "SUCCESS: Configuration applied." -ForegroundColor Green
 } else {
-    Write-Host "`nERROR: Failed to set default model. Ensure the OpenClaw Gateway is running." -ForegroundColor Red
+    Write-Host "ERROR: Failed to apply configuration." -ForegroundColor Red
     exit 1
 }
