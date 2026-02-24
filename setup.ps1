@@ -54,8 +54,8 @@ $PROVIDER_PATCH = @"
 # 3. Apply Config
 Write-Host "`nApplying configuration..." -ForegroundColor Yellow
 
-# Use quotes for the key path to ensure variable interpolation happens correctly
-openclaw config set "models.providers.$PROVIDER_ID" $PROVIDER_PATCH --json
+$SAFE_PATCH = $PROVIDER_PATCH -replace '"', '\"'
+openclaw config set "models.providers.$PROVIDER_ID" $SAFE_PATCH --json
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "Configuration applied." -ForegroundColor Green
