@@ -46,7 +46,7 @@ $PROVIDER_PATCH = @"
     "apiKey": "$API_KEY",
     "api": "openai-completions",
     "models": [
-      { "id": "$MODEL_ID", "name": "$MODEL_ID", "reasoning": true, "input": [ "text", "image" ] }
+      { "id": "$MODEL_ID", "name": "$MODEL_ID", "input": [ "text", "image" ] }
     ]
 }
 "@
