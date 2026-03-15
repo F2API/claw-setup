@@ -1,6 +1,11 @@
 # OpenClaw One-Click API Configurator (v1.3)
 # Windows PowerShell Version
 
+param (
+    [string]$Key,
+    [string]$Model
+)
+
 Write-Host "------------------------------------------" -ForegroundColor Cyan
 Write-Host "   OpenClaw API Setup Wizard (v1.3)" -ForegroundColor Cyan
 Write-Host "------------------------------------------" -ForegroundColor Cyan
@@ -21,22 +26,38 @@ if ((Get-ExecutionPolicy) -eq "Restricted") {
 }
 
 # 1. Collect Data
-function Read-Default {
-    param (
-        [string]$Prompt,
-        [string]$Default
-    )
-    $input = Read-Host -Prompt "$Prompt [$Default]"
-    if ([string]::IsNullOrWhiteSpace($input)) {
-        return $Default
-    }
-    return $input
-}
+$PROVIDER_ID = "f2api"
+$BASE_URL    = "https://api.f2api.com/v1"
+$MODEL_ID    = "gemini-3-flash-preview"
+$API_KEY     = ""
 
-$PROVIDER_ID = Read-Default "Enter Provider ID (slug)" "f2api"
-$BASE_URL    = Read-Default "Enter Base URL" "https://api.f2api.com/v1"
-$API_KEY     = Read-Default "Enter API Key" ""
-$MODEL_ID    = Read-Default "Enter Model ID" "gemini-3-flash-preview"
+if (-not [string]::IsNullOrWhiteSpace($Key)) {
+    $API_KEY = $Key
+    if (-not [string]::IsNullOrWhiteSpace($Model)) {
+        $MODEL_ID = $Model
+    }
+    Write-Host "Running in non-interactive mode with provided key." -ForegroundColor Green
+    Write-Host "Provider ID: $PROVIDER_ID" -ForegroundColor Gray
+    Write-Host "Base URL: $BASE_URL" -ForegroundColor Gray
+    Write-Host "Model ID: $MODEL_ID" -ForegroundColor Gray
+} else {
+    function Read-Default {
+        param (
+            [string]$Prompt,
+            [string]$Default
+        )
+        $input = Read-Host -Prompt "$Prompt [$Default]"
+        if ([string]::IsNullOrWhiteSpace($input)) {
+            return $Default
+        }
+        return $input
+    }
+
+    $PROVIDER_ID = Read-Default "Enter Provider ID (slug)" $PROVIDER_ID
+    $BASE_URL    = Read-Default "Enter Base URL" $BASE_URL
+    $API_KEY     = Read-Default "Enter API Key" ""
+    $MODEL_ID    = Read-Default "Enter Model ID" $MODEL_ID
+}
 
 # 2. Construct JSON Patch
 # Using a here-string for the JSON structure
